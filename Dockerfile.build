@@ -4,6 +4,7 @@
 ARG BAZELISK_VERSION=1.8.0
 ARG PI_COMMIT=a5fd855d4b3293e23816ef6154e83dc6621aed6a
 ARG BMV2_COMMIT=b0fb01ecacbf3a7d7f0c01e2f149b0c6a957f779
+ARG NIKSS_COMMIT=bc73ef135d78aefd938f11a36a28768408780da8
 ARG JDK_URL=https://mirror.bazel.build/openjdk/azul-zulu11.29.3-ca-jdk11.0.2/zulu11.29.3-ca-jdk11.0.2-linux_x64.tar.gz
 ARG LLVM_REPO_NAME="deb http://apt.llvm.org/buster/  llvm-toolchain-buster-11 main"
 
@@ -31,7 +32,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 # BF SDE dependecies
 # + libelf-dev gawk to build the kernel modules
 # Tools and libraries for p4lang/target-syslibs and p4lang/target-utils
-# + cmake libedit-dev expat
+# + libedit-dev expat
 # Tools to patch the SONiC kernel headers
 # + rsync
 ENV PKG_DEPS pkg-config zip zlib1g-dev unzip wget ca-certificates \
@@ -40,7 +41,7 @@ ENV PKG_DEPS pkg-config zip zlib1g-dev unzip wget ca-certificates \
     lcov curl autoconf automake libtool libgmp-dev libpcap-dev \
     libboost-thread-dev libboost-filesystem-dev libboost-program-options-dev \
     gnupg2 software-properties-common python3-pip python3-dev \
-    apt-transport-https libelf-dev cmake libedit-dev expat libbz2-dev rsync gawk
+    apt-transport-https libelf-dev libedit-dev expat libbz2-dev rsync gawk
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends $PKG_DEPS
@@ -89,6 +90,28 @@ RUN git clone https://github.com/p4lang/behavioral-model.git /tmp/bmv2 && \
     make -j${JOBS} && make install && ldconfig && \
     cp /tmp/bmv2/tools/veth* ${BMV2_INSTALL}/bin/ && \
     rm -rf /tmp/bmv2
+
+RUN apt-get install -y libssl-dev
+RUN cd /tmp && wget http://www.cmake.org/files/v3.16/cmake-3.16.0.tar.gz && \
+    tar xf cmake-3.16.0.tar.gz && \
+    cd /tmp/cmake-3.16.0 && ./bootstrap && \
+    make -j${JOBS} && make install && ldconfig && \
+    rm -f /tmp/cmake-3.16.0.tar.gz && rm -rf /tmp/cmake-3.16.0
+
+RUN apt-get install -y libjansson-dev
+ARG NIKSS_COMMIT
+ENV NIKSS_INSTALL /usr/local
+RUN git clone --recursive https://github.com/NIKSS-vSwitch/nikss.git /tmp/nikss && \
+    cd /tmp/nikss && git checkout ${NIKSS_COMMIT} && \
+    ./build_libbpf.sh && \
+    mkdir build && cd /tmp/nikss/build && \
+    cmake -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=${NIKSS_INSTALL} -DBUILD_SHARED=on .. && \
+    make -j${JOBS} && make install && ldconfig && \
+    mkdir -p ${NIKSS_INSTALL}/include/nikss && \
+    # TODO: headers should be installed by cmake above
+    cp -r /tmp/nikss/include/. ${NIKSS_INSTALL}/include/nikss && \
+    rm -rf /tmp/nikss
 
 # Bazelisk and Bazel
 ADD .bazelversion .

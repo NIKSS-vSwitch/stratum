@@ -96,6 +96,14 @@ def stratum_deps():
             sha256 = "696bd1f01133e85cc83125ac747f53f67a519208cab3c7ddaa1d131ee0cea65c",
         )
 
+    if "com_github_nikss_vswitch" not in native.existing_rules():
+        # ----- NIKSS -----
+        remote_workspace(
+            name = "com_github_nikss_vswitch",
+            remote = "https://github.com/NIKSS-vSwitch/nikss.git",
+            commit = "3ce3a1ee53c40fa763f1815a5b7a131745b6dc0c",
+        )
+
     if "com_github_openconfig_gnmi_proto" not in native.existing_rules():
         http_archive(
             name = "com_github_openconfig_gnmi_proto",
