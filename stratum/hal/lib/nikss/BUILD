@@ -1,6 +1,3 @@
-# Copyright 2018-present Barefoot Networks, Inc.
-# SPDX-License-Identifier: Apache-2.0
-
 load(
     "//bazel:rules.bzl",
     "STRATUM_INTERNAL",

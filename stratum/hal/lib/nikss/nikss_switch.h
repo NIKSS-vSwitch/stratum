@@ -83,5 +83,3 @@ class NikssSwitch : public SwitchInterface {
 }  // namespace stratum
 
 #endif  // STRATUM_HAL_LIB_NIKSS_NIKSS_SWITCH_H_
-
-

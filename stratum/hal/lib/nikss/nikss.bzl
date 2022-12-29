@@ -1,5 +1,3 @@
-# Copyright 2018-present Open Networking Foundation
-# SPDX-License-Identifier: Apache-2.0
 
 # This Starlark rule imports the NIKSS shared libraries and headers since there is
 # not yet any native support for Bazel in NIKSS. The NIKSS_INSTALL environment
