@@ -14,6 +14,7 @@
 #include "absl/types/optional.h"
 #include "glog/logging.h"
 #include "p4/v1/p4runtime.pb.h"
+#include "stratum/hal/lib/p4/utils.h"
 
 namespace stratum {
 namespace p4runtime {
@@ -71,7 +72,7 @@ grpc::Status VerifyElectionIdIsActive(
   return grpc::Status(
       grpc::StatusCode::PERMISSION_DENIED,
       absl::StrCat("Election ID ", PrettyPrintElectionId(election_id),
-                   " is not active for the role."));
+                   " is not active for role ", PrettyPrintRoleName(role_name)));
 }
 
 grpc::Status VerifyRoleCanPushPipeline(
@@ -80,7 +81,9 @@ grpc::Status VerifyRoleCanPushPipeline(
                               absl::optional<P4RoleConfig>>& role_configs) {
   const auto& role_config = role_configs.find(role_name);
   if (role_config == role_configs.end()) {
-    return grpc::Status(grpc::StatusCode::NOT_FOUND, "Unknown role.");
+    return grpc::Status(
+        grpc::StatusCode::NOT_FOUND,
+        absl::StrCat("Role ", PrettyPrintRoleName(role_name), " is unknown."));
   }
   if (!role_config->second.has_value()) return grpc::Status::OK;
   if (!role_config->second->can_push_pipeline()) {
@@ -165,6 +168,15 @@ grpc::Status VerifyRoleConfig(
         absl::StrCat("Role config ", PrettyPrintRoleName(role_name),
                      " contains a PacketIn filter, but disables "
                      "PacketIn delivery."));
+  }
+
+  // Verify that if a PacketIn filter is set, it must be non-empty.
+  if (role_config->has_packet_in_filter() &&
+      role_config->packet_in_filter().value().empty()) {
+    return grpc::Status(
+        grpc::StatusCode::INVALID_ARGUMENT,
+        absl::StrCat("Role config ", PrettyPrintRoleName(role_name),
+                     " contains an empty PacketIn filter."));
   }
 
   // TODO(max): verify packet filters for valid metadata
@@ -259,7 +271,9 @@ grpc::Status VerifyRoleCanAccessIds(
                               absl::optional<P4RoleConfig>>& role_configs) {
   const auto& role_config = role_configs.find(role_name);
   if (role_config == role_configs.end()) {
-    return grpc::Status(grpc::StatusCode::NOT_FOUND, "Unknown role.");
+    return grpc::Status(
+        grpc::StatusCode::NOT_FOUND,
+        absl::StrCat("Role ", PrettyPrintRoleName(role_name), " is unknown."));
   }
   if (!role_config->second.has_value()) return grpc::Status::OK;
   VLOG(1) << "Testing IDs against role config: "
@@ -336,8 +350,14 @@ grpc::Status SdnControllerManager::HandleArbitrationUpdate(
     P4RoleConfig rc;
     if (!update.role().config().UnpackTo(&rc)) {
       return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
-                          "Unknown role config.");
+                          "Unknown role config format.");
     }
+    // Ensure packet filter byte string is canonical for later comparison.
+    if (rc.has_packet_in_filter()) {
+      rc.mutable_packet_in_filter()->set_value(
+          hal::ByteStringToP4RuntimeByteString(rc.packet_in_filter().value()));
+    }
+
     role_config = rc;
   }
 
@@ -519,8 +539,12 @@ grpc::Status SdnControllerManager::AllowRequest(
   }
 
   if (election_id != election_id_past_for_role->second) {
-    return grpc::Status(grpc::StatusCode::PERMISSION_DENIED,
-                        "Only the primary connection can issue requests.");
+    return grpc::Status(
+        grpc::StatusCode::PERMISSION_DENIED,
+        absl::StrCat("Only the primary connection can issue requests, but this "
+                     "SDN connection for role ",
+                     PrettyPrintRoleName(role_name), " with election ID ",
+                     PrettyPrintElectionId(election_id), " is not primary."));
   }
 
   return VerifyElectionIdIsActive(role_name, election_id, connections_);
