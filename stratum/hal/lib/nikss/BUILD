@@ -11,7 +11,7 @@ package(
 )
 
 stratum_cc_library(
-    name = "bpf_switch",
+    name = "nikss_switch",
     srcs = ["nikss_switch.cc"],
     hdrs = ["nikss_switch.h"],
     deps = [
