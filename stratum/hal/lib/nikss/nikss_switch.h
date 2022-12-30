@@ -2,6 +2,7 @@
 #define STRATUM_HAL_LIB_NIKSS_NIKSS_SWITCH_H_
 
 #include "stratum/hal/lib/nikss/nikss_chassis_manager.h"
+#include "stratum/hal/lib/nikss/nikss_node.h"
 #include "stratum/hal/lib/common/switch_interface.h"
 
 namespace stratum {
@@ -55,7 +56,8 @@ class NikssSwitch : public SwitchInterface {
 
 
   static std::unique_ptr<NikssSwitch> CreateInstance(
-      PhalInterface* phal_interface, NikssChassisManager* nikss_chassis_manager);
+      PhalInterface* phal_interface, NikssChassisManager* nikss_chassis_manager,
+      const absl::flat_hash_map<int, NikssNode*>& device_id_to_nikss_node);
 
   // NikssSwitch is neither copyable nor movable.
   NikssSwitch(const NikssSwitch&) = delete;
@@ -67,13 +69,25 @@ class NikssSwitch : public SwitchInterface {
   // Private constructor. Use CreateInstance() to create an instance of this
   // class.
   NikssSwitch(PhalInterface* phal_interface,
-              NikssChassisManager* nikss_chassis_manager);
+              NikssChassisManager* nikss_chassis_manager,
+              const absl::flat_hash_map<int, NikssNode*>& device_id_to_nikss_node);
+
+  // Helper to get NikssNode pointer from device_id number or return error
+  // indicating invalid device_id.
+  ::util::StatusOr<NikssNode*> GetNikssNodeFromDeviceId(int device_id) const;
 
   PhalInterface* phal_interface_;  // not owned by this class.
 
   // Per chassis Managers. Note that there is only one instance of this class
   // per chassis.
   NikssChassisManager* nikss_chassis_manager_;  // not owned by the class.
+
+  // Map from zero-based device_id number corresponding to a node/pipeline to a
+  // pointer to NikssNode.
+  // This map is initialized in the constructor and will not change
+  // during the lifetime of the class.
+  // Pointers not owned.
+  const absl::flat_hash_map<int, NikssNode*> device_id_to_nikss_node_;
 
 };
 

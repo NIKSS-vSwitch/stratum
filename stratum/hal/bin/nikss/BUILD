@@ -16,6 +16,9 @@ stratum_cc_binary(
     deps = [
         "//stratum/glue:init_google",
         "//stratum/glue:logging",
+        "//stratum/hal/lib/nikss:nikss_chassis_manager",
+        "//stratum/hal/lib/nikss:nikss_wrapper",
+        "//stratum/hal/lib/nikss:nikss_node",
         "//stratum/hal/lib/nikss:nikss_switch",
         "//stratum/hal/lib/common:hal",
         "//stratum/hal/lib/phal:phal_sim",

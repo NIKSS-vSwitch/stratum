@@ -2,6 +2,7 @@
 
 #include "absl/memory/memory.h"
 #include "absl/synchronization/mutex.h"
+#include "stratum/hal/lib/nikss/nikss_node.h"
 
 extern "C" {
 #include "nikss/nikss.h"
@@ -12,9 +13,16 @@ namespace hal {
 namespace nikss {
 
 NikssSwitch::NikssSwitch(PhalInterface* phal_interface,
-                         NikssChassisManager* nikss_chassis_manager)
+                         NikssChassisManager* nikss_chassis_manager,
+                         const absl::flat_hash_map<int, NikssNode*>& device_id_to_nikss_node)
     : phal_interface_(ABSL_DIE_IF_NULL(phal_interface)),
-      nikss_chassis_manager_(ABSL_DIE_IF_NULL(nikss_chassis_manager)) {}
+      nikss_chassis_manager_(ABSL_DIE_IF_NULL(nikss_chassis_manager)),
+      device_id_to_nikss_node_(device_id_to_nikss_node) {
+  for (const auto& entry : device_id_to_nikss_node_) {
+    CHECK_NE(entry.second, nullptr)
+        << "Detected null NikssNode for device_id " << entry.first << ".";
+  }
+}
 
 NikssSwitch::~NikssSwitch() {}
 
@@ -28,6 +36,15 @@ NikssSwitch::~NikssSwitch() {}
 
 ::util::Status NikssSwitch::PushForwardingPipelineConfig(
     uint64 node_id, const ::p4::v1::ForwardingPipelineConfig& config) {
+
+  LOG(INFO) << "Pushing P4-based forwarding pipeline to NIKSS";
+
+  ASSIGN_OR_RETURN(auto* node, GetNikssNodeFromDeviceId(1));
+  RETURN_IF_ERROR(node->PushForwardingPipelineConfig(config));
+
+  LOG(INFO) << "P4-based forwarding pipeline config pushed successfully to "
+            << "node with ID " << node_id << ".";
+
   return ::util::OkStatus();
 }
 
@@ -107,9 +124,20 @@ NikssSwitch::~NikssSwitch() {}
 }
 
 std::unique_ptr<NikssSwitch> NikssSwitch::CreateInstance(
-    PhalInterface* phal_interface, NikssChassisManager* nikss_chassis_manager) {
+    PhalInterface* phal_interface, NikssChassisManager* nikss_chassis_manager,
+    const absl::flat_hash_map<int, NikssNode*>& device_id_to_nikss_node) {
   return absl::WrapUnique(
-      new NikssSwitch(phal_interface, nikss_chassis_manager));
+      new NikssSwitch(phal_interface, nikss_chassis_manager, device_id_to_nikss_node));
+}
+
+::util::StatusOr<NikssNode*> NikssSwitch::GetNikssNodeFromDeviceId(
+    int device_id) const {
+  NikssNode* node = gtl::FindPtrOrNull(device_id_to_nikss_node_, device_id);
+  if (node == nullptr) {
+    return MAKE_ERROR(ERR_ENTRY_NOT_FOUND)
+           << "Device " << device_id << " is unknown.";
+  }
+  return node;
 }
 
 }  // namespace bmv2
