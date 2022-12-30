@@ -11,6 +11,9 @@
 #include "stratum/lib/security/auth_policy_checker.h"
 #include "stratum/lib/security/credentials_manager.h"
 
+// currently we assume only one device_id for NIKSS
+DEFINE_uint32(device_id, 1, "NIKSS device/node id");
+
 namespace stratum {
 namespace hal {
 namespace nikss {
@@ -19,22 +22,21 @@ namespace nikss {
   InitGoogle(argv[0], &argc, &argv, true);
   InitStratumLogging();
 
-  // TODO: re-think if it's really needed
-  int device_id = 1;
+  uint64 node_id(FLAGS_device_id);
 
   auto nikss_wrapper = NikssWrapper::CreateSingleton();
 
   auto nikss_node = NikssNode::CreateInstance(
-      nikss_wrapper, device_id);
+      nikss_wrapper, node_id);
   auto* phal_sim = PhalSim::CreateSingleton();
-  absl::flat_hash_map<int, NikssNode*> device_id_to_nikss_node = {
-      {device_id, nikss_node.get()},
+  absl::flat_hash_map<uint64, NikssNode*> node_id_to_nikss_node = {
+      {node_id, nikss_node.get()},
   };
   auto nikss_chassis_manager =
       NikssChassisManager::CreateInstance(phal_sim);
 
   auto nikss_switch = NikssSwitch::CreateInstance(
-      phal_sim, nikss_chassis_manager.get(), device_id_to_nikss_node);
+      phal_sim, nikss_chassis_manager.get(), node_id_to_nikss_node);
 
   // Create the 'Hal' class instance.
   auto auth_policy_checker = AuthPolicyChecker::CreateInstance();

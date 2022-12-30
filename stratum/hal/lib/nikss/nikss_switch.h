@@ -57,7 +57,7 @@ class NikssSwitch : public SwitchInterface {
 
   static std::unique_ptr<NikssSwitch> CreateInstance(
       PhalInterface* phal_interface, NikssChassisManager* nikss_chassis_manager,
-      const absl::flat_hash_map<int, NikssNode*>& device_id_to_nikss_node);
+      const absl::flat_hash_map<uint64, NikssNode*>& node_id_to_nikss_node);
 
   // NikssSwitch is neither copyable nor movable.
   NikssSwitch(const NikssSwitch&) = delete;
@@ -70,11 +70,11 @@ class NikssSwitch : public SwitchInterface {
   // class.
   NikssSwitch(PhalInterface* phal_interface,
               NikssChassisManager* nikss_chassis_manager,
-              const absl::flat_hash_map<int, NikssNode*>& device_id_to_nikss_node);
+              const absl::flat_hash_map<uint64, NikssNode*>& node_id_to_nikss_node);
 
-  // Helper to get NikssNode pointer from device_id number or return error
-  // indicating invalid device_id.
-  ::util::StatusOr<NikssNode*> GetNikssNodeFromDeviceId(int device_id) const;
+  // Helper to get NikssNode pointer from node_id number or return error
+  // indicating invalid node_id.
+  ::util::StatusOr<NikssNode*> GetNikssNodeFromNodeId(uint64 node_id) const;
 
   PhalInterface* phal_interface_;  // not owned by this class.
 
@@ -82,12 +82,12 @@ class NikssSwitch : public SwitchInterface {
   // per chassis.
   NikssChassisManager* nikss_chassis_manager_;  // not owned by the class.
 
-  // Map from zero-based device_id number corresponding to a node/pipeline to a
+  // Map from zero-based node_id number corresponding to a node/pipeline to a
   // pointer to NikssNode.
   // This map is initialized in the constructor and will not change
   // during the lifetime of the class.
   // Pointers not owned.
-  const absl::flat_hash_map<int, NikssNode*> device_id_to_nikss_node_;
+  const absl::flat_hash_map<uint64, NikssNode*> node_id_to_nikss_node_;
 
 };
 

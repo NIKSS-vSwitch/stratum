@@ -27,7 +27,7 @@ class NikssNode {
 
   // Factory function for creating the instance of the class.
   static std::unique_ptr<NikssNode> CreateInstance(
-      NikssInterface* nikss_interface, int device_id);
+      NikssInterface* nikss_interface, uint64 node_id);
 
   // NikssNode is neither copyable nor movable.
   NikssNode(const NikssNode&) = delete;
@@ -42,7 +42,7 @@ class NikssNode {
  private:
   // Private constructor. Use CreateInstance() to create an instance of this
   // class.
-  NikssNode(NikssInterface* nikss_interface, int device_id);
+  NikssNode(NikssInterface* nikss_interface, uint64 node_id);
 
   // Reader-writer lock used to protect access to node-specific state.
   mutable absl::Mutex lock_;
@@ -55,13 +55,8 @@ class NikssNode {
   NikssInterface* nikss_interface_ = nullptr;
 
   // Logical node ID corresponding to the node/pipeline managed by this class
-  // instance. Assigned on PushChassisConfig() and might change during the
-  // lifetime of the class.
+  // instance.
   uint64 node_id_ GUARDED_BY(lock_);
-
-  // Fixed zero-based device_id number corresponding to the node/pipeline
-  // managed by this class instance. Assigned in the class constructor.
-  const int device_id_;
 };
 
 
