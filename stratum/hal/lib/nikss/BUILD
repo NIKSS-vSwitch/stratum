@@ -47,7 +47,7 @@ stratum_cc_library(
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/synchronization",
         "@com_google_googleapis//google/rpc:status_cc_proto",
-        "@local_nikss_bin//:nikss",
+        ":nikss_interface",
     ]
 )
 

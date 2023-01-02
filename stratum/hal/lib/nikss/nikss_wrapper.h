@@ -16,8 +16,12 @@ namespace nikss {
 class NikssWrapper : public NikssInterface {
  public:
   // NikssInterface public methods.
+  ::util::Status AddPort(int pipeline_id,
+                         const std::string& port_name) override;
+  ::util::Status DelPort(int pipeline_id,
+                         const std::string& port_name) override;
   ::util::Status AddPipeline(int pipeline_id,
-                             const std::string filepath) override;
+                         const std::string filepath) override;
 
   static NikssWrapper* CreateSingleton() LOCKS_EXCLUDED(init_lock_);
 

@@ -1,5 +1,7 @@
 #include "stratum/hal/lib/nikss/nikss_switch.h"
 
+#include <set>
+
 #include "absl/memory/memory.h"
 #include "absl/synchronization/mutex.h"
 #include "stratum/hal/lib/nikss/nikss_node.h"
@@ -27,6 +29,24 @@ NikssSwitch::NikssSwitch(PhalInterface* phal_interface,
 NikssSwitch::~NikssSwitch() {}
 
 ::util::Status NikssSwitch::PushChassisConfig(const ChassisConfig& config) {
+  absl::WriterMutexLock l(&chassis_lock);
+
+  std::set<uint64> known_node_ids;
+  std::set<uint64> new_node_ids;
+  for (auto& node : node_id_to_nikss_node_) known_node_ids.insert(node.first);
+  for (auto& node : config.nodes()) new_node_ids.insert(node.id());
+  if (known_node_ids != new_node_ids) {
+    return MAKE_ERROR(ERR_INVALID_PARAM)
+           << "The NikssSwitch expects constant node ids";
+  }
+
+  for (const auto& node : config.nodes()) {
+    // check if node with ID exists, returned node_ is not used
+    ASSIGN_OR_RETURN(auto* node_, GetNikssNodeFromNodeId(node.id()));
+  }
+
+  RETURN_IF_ERROR(phal_interface_->PushChassisConfig(config));
+  RETURN_IF_ERROR(nikss_chassis_manager_->PushChassisConfig(config));
   return ::util::OkStatus();
 }
 

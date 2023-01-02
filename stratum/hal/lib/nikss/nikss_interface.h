@@ -9,6 +9,14 @@ namespace nikss {
 
 class NikssInterface {
  public:
+
+  // Add a port with given name to the NIKSS pipeline.
+  // NOTE! The NIKSS pipeline must be loaded before any port is added!
+  virtual ::util::Status AddPort(int pipeline_id,
+                                 const std::string& port_name) = 0;
+  // Remove a port with given name from the NIKSS pipeline.
+  virtual ::util::Status DelPort(int pipeline_id,
+                                 const std::string& port_name) = 0;
   // Add and initialize a NIKSS pipeline. The pipeline will be loaded
   // into the Linux eBPF subsystem. Can be used to re-initialize an existing device.
   virtual ::util::Status AddPipeline(int pipeline_id,

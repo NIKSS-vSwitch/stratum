@@ -40,6 +40,29 @@ ABSL_CONST_INIT absl::Mutex NikssWrapper::init_lock_(absl::kConstInit);
 
 NikssWrapper::NikssWrapper() {}
 
+::util::Status NikssWrapper::AddPort(int pipeline_id,
+                                     const std::string& port_name) {
+  auto ctx = absl::make_unique<nikss_context_t>();
+  nikss_context_init(ctx.get());
+  nikss_context_set_pipeline(ctx.get(), static_cast<nikss_pipeline_id_t>(pipeline_id));
+
+  int port_id = -1;
+  RETURN_IF_NIKSS_ERROR(nikss_pipeline_add_port(ctx.get(), port_name.c_str(), &port_id));
+
+  return ::util::OkStatus();
+}
+
+::util::Status NikssWrapper::DelPort(int pipeline_id,
+                                     const std::string& port_name) {
+  auto ctx = absl::make_unique<nikss_context_t>();
+  nikss_context_init(ctx.get());
+  nikss_context_set_pipeline(ctx.get(), static_cast<nikss_pipeline_id_t>(pipeline_id));
+
+  RETURN_IF_NIKSS_ERROR(nikss_pipeline_del_port(ctx.get(), port_name.c_str()));
+
+  return ::util::OkStatus();
+}
+
 ::util::Status NikssWrapper::AddPipeline(int pipeline_id,
                                          const std::string bpf_obj) {
   std::string tmp_filepath = "/etc/stratum/bpf.o";
@@ -56,6 +79,7 @@ NikssWrapper::NikssWrapper() {}
     return ::util::OkStatus();
   }
 
+  // FIXME: file is not removed if the load() fails
   RETURN_IF_NIKSS_ERROR(nikss_pipeline_load(ctx.get(), tmp_filepath.c_str()));
   RemoveFile(tmp_filepath);
 
