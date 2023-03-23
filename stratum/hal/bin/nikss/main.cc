@@ -7,9 +7,7 @@
 #include "stratum/lib/security/auth_policy_checker.h"
 #include "stratum/lib/security/credentials_manager.h"
 
-extern "C" {
 #include "nikss/nikss.h"
-}
 
 namespace stratum {
 namespace hal {
@@ -18,14 +16,6 @@ namespace nikss {
 ::util::Status Main(int argc, char* argv[]) {
   InitGoogle(argv[0], &argc, &argv, true);
   InitStratumLogging();
-
-  // TODO: remove the below code, it's only a demonstration
-  nikss_context_t ctx;
-  nikss_context_init(&ctx);
-  std::cout << "nikss pipe id " << ctx.pipeline_id << std::endl;
-  nikss_context_set_pipeline(&ctx, 1);
-  std::cout << "nikss pipe id " << ctx.pipeline_id << std::endl;
-  nikss_context_free(&ctx);
 
   auto* phal_sim = PhalSim::CreateSingleton();
   auto nikss_chassis_manager =
