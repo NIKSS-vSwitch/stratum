@@ -53,6 +53,9 @@ PI_deps()
 load("//stratum/hal/bin/bmv2:bmv2.bzl", "bmv2_configure")
 bmv2_configure(name = "local_bmv2_bin")
 
+load("//stratum/hal/lib/nikss:nikss.bzl", "nikss_configure")
+nikss_configure(name = "local_nikss_bin")
+
 load("//stratum/hal/lib/barefoot:barefoot.bzl", "barefoot_configure")
 barefoot_configure(name = "local_barefoot_bin")
 

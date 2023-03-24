@@ -4,6 +4,8 @@
 ARG BAZELISK_VERSION=1.8.0
 ARG PI_COMMIT=a5fd855d4b3293e23816ef6154e83dc6621aed6a
 ARG BMV2_COMMIT=8e8a192fc58e2e994f4c82a34496ec6833bf0d50
+ARG NIKSS_COMMIT=9403cb5dddc69398f74d373ba17eb4c5cbd1ce32
+
 ARG JDK_URL=https://mirror.bazel.build/openjdk/azul-zulu11.29.3-ca-jdk11.0.2/zulu11.29.3-ca-jdk11.0.2-linux_x64.tar.gz
 ARG LLVM_REPO_NAME="deb http://apt.llvm.org/buster/  llvm-toolchain-buster-11 main"
 
@@ -40,7 +42,8 @@ ENV PKG_DEPS pkg-config zip zlib1g-dev unzip wget ca-certificates \
     lcov curl autoconf automake libtool libgmp-dev libpcap-dev \
     libboost-thread-dev libboost-filesystem-dev libboost-program-options-dev \
     gnupg2 software-properties-common python3-pip python3-dev \
-    apt-transport-https libelf-dev cmake libedit-dev expat libbz2-dev rsync gawk
+    apt-transport-https libelf-dev cmake libedit-dev expat libbz2-dev rsync gawk \
+    libjansson-dev
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends $PKG_DEPS
@@ -90,6 +93,17 @@ RUN git clone https://github.com/pudelkoM/behavioral-model.git /tmp/bmv2 && \
     make -j${JOBS} && make install && ldconfig && \
     cp /tmp/bmv2/tools/veth* ${BMV2_INSTALL}/bin/ && \
     rm -rf /tmp/bmv2
+
+ARG NIKSS_COMMIT
+ENV NIKSS_INSTALL /usr/local
+RUN git clone --recursive https://github.com/NIKSS-vSwitch/nikss.git /tmp/nikss && \
+    cd /tmp/nikss && git checkout ${NIKSS_COMMIT} && \
+    ./build_libbpf.sh && \
+    mkdir build && cd /tmp/nikss/build && \
+    cmake -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=${NIKSS_INSTALL} -DBUILD_SHARED=on .. && \
+    make -j${JOBS} && make install && make install_headers && ldconfig && \
+    rm -rf /tmp/nikss
 
 # Bazelisk and Bazel
 ADD .bazelversion .
