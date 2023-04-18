@@ -13,21 +13,19 @@
 #include "stratum/lib/utils.h"
 #include "stratum/lib/macros.h"
 
-extern "C" {
-#include "nikss/nikss.h"
-#include "nikss/nikss_pipeline.h"
-}
+#include <nikss/nikss.h>
+#include <nikss/nikss_pipeline.h>
 
 // A macro for simplify checking the return value of NIKSS API.
 // For now, we always return ERR_INTERNAL.
-#define RETURN_IF_NIKSS_ERROR(expr)                                                \
-  do {                                                                       \
-    /* Using _status below to avoid capture problems if expr is "status". */ \
-    const int __ret = (expr);                                   \
-    if (__ret != 0) {                                 \
-      return MAKE_ERROR(ERR_INTERNAL) << "Return Error: "                        \
-                                      << #expr << " failed with code " << __ret; \
-    }                                                                            \
+#define RETURN_IF_NIKSS_ERROR(expr)                                               \
+  do {                                                                            \
+    /* Using _status below to avoid capture problems if expr is "status". */      \
+    const int __ret = (expr);                                                     \
+    if (__ret != 0) {                                                             \
+      return MAKE_ERROR(ERR_INTERNAL) << "Return Error: "                         \
+                                      << #expr << " failed with code " << __ret;  \
+    }                                                                             \
   } while (0)
 
 
@@ -42,7 +40,7 @@ NikssWrapper::NikssWrapper() {}
 
 ::util::Status NikssWrapper::AddPipeline(int pipeline_id,
                                          const std::string bpf_obj) {
-  std::string tmp_filepath = "/etc/stratum/bpf.o";
+  std::string tmp_filepath = "/tmp/stratum_bpf.o";
   // FIXME: nikss currently doesn't support loading BPF programs from memory.
   //  So, we save it to the disk first and let NIKSS load it from the disk.
   RETURN_IF_ERROR(WriteStringToFile(bpf_obj, tmp_filepath));

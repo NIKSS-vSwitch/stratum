@@ -4,9 +4,7 @@
 #include "absl/synchronization/mutex.h"
 #include "stratum/hal/lib/nikss/nikss_node.h"
 
-extern "C" {
-#include "nikss/nikss.h"
-}
+#include <nikss/nikss.h>
 
 namespace stratum {
 namespace hal {

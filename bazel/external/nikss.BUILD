@@ -19,6 +19,3 @@ cc_import(
     hdrs = [],  # see cc_library rule above
     shared_library = "nikss-bin/lib/libnikss.so",
 )
-
-
-

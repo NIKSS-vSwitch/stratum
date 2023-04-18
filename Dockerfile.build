@@ -4,7 +4,7 @@
 ARG BAZELISK_VERSION=1.8.0
 ARG PI_COMMIT=a5fd855d4b3293e23816ef6154e83dc6621aed6a
 ARG BMV2_COMMIT=8e8a192fc58e2e994f4c82a34496ec6833bf0d50
-ARG NIKSS_COMMIT=bc73ef135d78aefd938f11a36a28768408780da8
+ARG NIKSS_COMMIT=85cb1d7b413212965d63f7b6816ef8c89e27e6b1
 
 ARG JDK_URL=https://mirror.bazel.build/openjdk/azul-zulu11.29.3-ca-jdk11.0.2/zulu11.29.3-ca-jdk11.0.2-linux_x64.tar.gz
 ARG LLVM_REPO_NAME="deb http://apt.llvm.org/buster/  llvm-toolchain-buster-11 main"
@@ -33,7 +33,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 # BF SDE dependecies
 # + libelf-dev gawk to build the kernel modules
 # Tools and libraries for p4lang/target-syslibs and p4lang/target-utils
-# + libedit-dev expat
+# + cmake libedit-dev expat
 # Tools to patch the SONiC kernel headers
 # + rsync
 ENV PKG_DEPS pkg-config zip zlib1g-dev unzip wget ca-certificates \
@@ -42,7 +42,8 @@ ENV PKG_DEPS pkg-config zip zlib1g-dev unzip wget ca-certificates \
     lcov curl autoconf automake libtool libgmp-dev libpcap-dev \
     libboost-thread-dev libboost-filesystem-dev libboost-program-options-dev \
     gnupg2 software-properties-common python3-pip python3-dev \
-    apt-transport-https libelf-dev libedit-dev expat libbz2-dev rsync gawk
+    apt-transport-https libelf-dev cmake libedit-dev expat libbz2-dev rsync gawk \
+    libjansson-dev
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends $PKG_DEPS
@@ -93,14 +94,6 @@ RUN git clone https://github.com/pudelkoM/behavioral-model.git /tmp/bmv2 && \
     cp /tmp/bmv2/tools/veth* ${BMV2_INSTALL}/bin/ && \
     rm -rf /tmp/bmv2
 
-RUN apt-get install -y libssl-dev
-RUN cd /tmp && wget http://www.cmake.org/files/v3.16/cmake-3.16.0.tar.gz && \
-    tar xf cmake-3.16.0.tar.gz && \
-    cd /tmp/cmake-3.16.0 && ./bootstrap && \
-    make -j${JOBS} && make install && ldconfig && \
-    rm -f /tmp/cmake-3.16.0.tar.gz && rm -rf /tmp/cmake-3.16.0
-
-RUN apt-get install -y libjansson-dev
 ARG NIKSS_COMMIT
 ENV NIKSS_INSTALL /usr/local
 RUN git clone --recursive https://github.com/NIKSS-vSwitch/nikss.git /tmp/nikss && \
@@ -109,10 +102,7 @@ RUN git clone --recursive https://github.com/NIKSS-vSwitch/nikss.git /tmp/nikss 
     mkdir build && cd /tmp/nikss/build && \
     cmake -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=${NIKSS_INSTALL} -DBUILD_SHARED=on .. && \
-    make -j${JOBS} && make install && ldconfig && \
-    mkdir -p ${NIKSS_INSTALL}/include/nikss && \
-    # TODO: headers should be installed by cmake above
-    cp -r /tmp/nikss/include/. ${NIKSS_INSTALL}/include/nikss && \
+    make -j${JOBS} && make install && make install_headers && ldconfig && \
     rm -rf /tmp/nikss
 
 # Bazelisk and Bazel
