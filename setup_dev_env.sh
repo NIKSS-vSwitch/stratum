@@ -120,7 +120,8 @@ fi
 DOCKER_RUN_OPTIONS="--rm -ti -v $THIS_DIR:/stratum -w /stratum"
 DOCKER_GID=$(id -g $USER)
 if [ -n "$DOCKER_GID" ]; then
-    DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS --user $USER:$DOCKER_GID"
+    #DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS --user $USER:$DOCKER_GID"
+    :
 fi
 if [ "$MOUNT_SSH" == YES ]; then
     DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS -v $HOME/.ssh:/home/$USER/.ssh"
@@ -136,4 +137,5 @@ if [ "$NP4_INTEL" == YES ]; then
     DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS -v /dev/intel-fpga-fme.0:/dev/intel-fpga-fme.0"
 fi
 DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS $@"
-docker run $DOCKER_RUN_OPTIONS $IMAGE_NAME bash
+docker run --privileged -v /sys/fs/bpf:/sys/fs/bpf $DOCKER_RUN_OPTIONS --name dok -p 9559:9559 $IMAGE_NAME bash
+#docker exec --name dok bash << EOF
