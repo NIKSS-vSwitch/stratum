@@ -6,7 +6,7 @@
 
 FROM stratumproject/build:build
 
-ARG USER_NAME=labs
+ARG USER_NAME=stratum
 ARG USER_ID=1000
 
 RUN useradd -ms /bin/bash -l -u $USER_ID $USER_NAME && \

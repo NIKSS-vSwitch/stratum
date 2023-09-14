@@ -35,7 +35,7 @@ namespace nikss {
       {node_id, nikss_node.get()},
   };
   auto nikss_chassis_manager =
-      NikssChassisManager::CreateInstance(phal_sim, nikss_wrapper);
+      NikssChassisManager::CreateInstance(phal_sim);
 
   auto nikss_switch = NikssSwitch::CreateInstance(
       phal_sim, nikss_chassis_manager.get(), node_id_to_nikss_node);

@@ -8,7 +8,6 @@
 #include "stratum/glue/status/status.h"
 
 #include "stratum/hal/lib/nikss/nikss_interface.h"
-#include "stratum/hal/lib/nikss/nikss_chassis_manager.h"
 
 namespace stratum {
 namespace hal {
@@ -19,12 +18,10 @@ class NikssNode {
   virtual ~NikssNode();
 
   virtual ::util::Status PushForwardingPipelineConfig(
-      const ::p4::v1::ForwardingPipelineConfig& config,
-      std::map<uint32, NikssChassisManager::PortConfig> chassis_config);
+      const ::p4::v1::ForwardingPipelineConfig& config);
   virtual ::util::Status SaveForwardingPipelineConfig(
       const ::p4::v1::ForwardingPipelineConfig& config) LOCKS_EXCLUDED(lock_);
-  virtual ::util::Status CommitForwardingPipelineConfig(
-  	  std::map<uint32, NikssChassisManager::PortConfig> chassis_config) LOCKS_EXCLUDED(lock_);
+  virtual ::util::Status CommitForwardingPipelineConfig() LOCKS_EXCLUDED(lock_);
   virtual ::util::Status VerifyForwardingPipelineConfig(
       const ::p4::v1::ForwardingPipelineConfig& config) const;
 
