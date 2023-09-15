@@ -3,7 +3,7 @@
 
 FROM stratumproject/build:build
 
-ARG USER_NAME=default
+ARG USER_NAME=labs
 ARG USER_ID=1000
 ARG GIT_GLOBAL_NAME=
 ARG GIT_GLOBAL_EMAIL=
@@ -18,3 +18,6 @@ USER $USER_NAME
 RUN (test "$GIT_GLOBAL_NAME" = "" || git config --global user.name "$GIT_GLOBAL_NAME") && \
     (test "$GIT_GLOBAL_EMAIL" = "" || git config --global user.email "$GIT_GLOBAL_EMAIL") && \
     (test "$GIT_GLOBAL_EDITOR" = "" || git config --global code.editor "$GIT_GLOBAL_EDITOR")
+    
+RUN sudo pip3 install scapy	
+RUN sudo apt-get install tcpdump
