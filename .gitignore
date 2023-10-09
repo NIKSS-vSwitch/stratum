@@ -65,6 +65,3 @@ __pycache__/
 # SSL certificates
 tools/tls/certs/
 .srl
-
-/bb.sh
-/my_setup_dev_env.sh
