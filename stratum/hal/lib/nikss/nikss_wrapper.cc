@@ -62,7 +62,6 @@ NikssWrapper::NikssWrapper() {}
   nikss_context_set_pipeline(ctx.get(), static_cast<nikss_pipeline_id_t>(pipeline_id));
 
   RETURN_IF_NIKSS_ERROR(nikss_pipeline_del_port(ctx.get(), port_name.c_str()));
-
   nikss_context_free(ctx.get());
   
   return ::util::OkStatus();

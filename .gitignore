@@ -65,3 +65,7 @@ __pycache__/
 # SSL certificates
 tools/tls/certs/
 .srl
+
+# Dockerfiles in stratum
+/stratum/Dockerfile*
+

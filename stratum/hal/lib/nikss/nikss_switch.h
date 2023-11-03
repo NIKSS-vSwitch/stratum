@@ -16,6 +16,7 @@ class NikssSwitch : public SwitchInterface {
   // SwitchInterface public methods.
   ::util::Status PushChassisConfig(const ChassisConfig& config) override;
   ::util::Status VerifyChassisConfig(const ChassisConfig& config) override;
+  //::util::Status GetConfig(uint32 port_id); //override;
   ::util::Status PushForwardingPipelineConfig(
       uint64 node_id,
       const ::p4::v1::ForwardingPipelineConfig& config) override;

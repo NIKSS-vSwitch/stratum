@@ -31,6 +31,7 @@ Usage: $0
     [--git-email <email>]           use the provided email for git commits
     [--git-editor <editor command>] use the provided editor for git
     [--np4-intel]                   create NP4 Intel build environment
+    []
     [-- [Docker options]]           additional Docker options for running the container
 EOF
 }
@@ -45,6 +46,10 @@ do
         ;;
     --pull)
         PULL_DOCKER=YES
+        shift
+        ;;
+    --nikss)
+        NIKSS_SWITCH=YES
         shift
         ;;
     --mount-ssh)
@@ -120,7 +125,8 @@ fi
 DOCKER_RUN_OPTIONS="--rm -ti -v $THIS_DIR:/stratum -w /stratum"
 DOCKER_GID=$(id -g $USER)
 if [ -n "$DOCKER_GID" ]; then
-    DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS --user $USER:$DOCKER_GID"
+    #DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS --user $USER:$DOCKER_GID"
+    :
 fi
 if [ "$MOUNT_SSH" == YES ]; then
     DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS -v $HOME/.ssh:/home/$USER/.ssh"
@@ -134,6 +140,9 @@ else
 fi
 if [ "$NP4_INTEL" == YES ]; then
     DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS -v /dev/intel-fpga-fme.0:/dev/intel-fpga-fme.0"
+fi
+if [ "$NIKSS_SWITCH" == YES ]; then
+	DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS --privileged -v /sys/fs/bpf:/sys/fs/bpf"
 fi
 DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS $@"
 
