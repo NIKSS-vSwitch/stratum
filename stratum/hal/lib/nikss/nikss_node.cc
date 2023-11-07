@@ -13,7 +13,6 @@ namespace nikss {
 NikssNode::NikssNode(NikssInterface* nikss_interface, uint64 node_id)
     : config_(),
       nikss_interface_(ABSL_DIE_IF_NULL(nikss_interface)),
-      //nikss_switch_(ABSL_DIE_IF_NULL(nikss_switch)),
       node_id_(node_id) {}
 
 NikssNode::NikssNode()
@@ -53,7 +52,8 @@ std::unique_ptr<NikssNode> NikssNode::CreateInstance(
     NikssChassisManager::PortConfig config = it->second;
     LOG(INFO) << "Adding new port with name " << config.name << ".";
     RETURN_IF_ERROR(nikss_interface_->AddPort(node_id_, config.name));
-  } 
+  }
+  
   return ::util::OkStatus();
 }
 

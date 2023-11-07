@@ -3,7 +3,7 @@
 
 FROM stratumproject/build:build
 
-ARG USER_NAME=labs
+ARG USER_NAME=default
 ARG USER_ID=1000
 ARG GIT_GLOBAL_NAME=
 ARG GIT_GLOBAL_EMAIL=

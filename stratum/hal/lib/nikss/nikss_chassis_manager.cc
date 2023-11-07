@@ -37,8 +37,7 @@ std::unique_ptr<NikssChassisManager> NikssChassisManager::CreateInstance(
 
 ::util::Status NikssChassisManager::PushChassisConfig(
     const ChassisConfig& config) {
-
-::util::Status status = ::util::OkStatus();  // errors to keep track of.
+  ::util::Status status = ::util::OkStatus();  // errors to keep track of.
   
   std::map<uint64, std::map<uint32, PortConfig>> chassis_config;
 
