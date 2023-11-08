@@ -29,10 +29,11 @@ std::unique_ptr<NikssNode> NikssNode::CreateInstance(
 }
 
 ::util::Status NikssNode::PushForwardingPipelineConfig(
-    const ::p4::v1::ForwardingPipelineConfig& config) {
+    const ::p4::v1::ForwardingPipelineConfig& config,
+    std::map<uint64, std::map<uint32, NikssChassisManager::PortConfig>> chassis_config) {
   // SaveForwardingPipelineConfig + CommitForwardingPipelineConfig
   RETURN_IF_ERROR(SaveForwardingPipelineConfig(config));
-  return CommitForwardingPipelineConfig();
+  return CommitForwardingPipelineConfig(chassis_config);
 }
 
 ::util::Status NikssNode::SaveForwardingPipelineConfig(
@@ -41,8 +42,18 @@ std::unique_ptr<NikssNode> NikssNode::CreateInstance(
   return ::util::OkStatus();
 }
 
-::util::Status NikssNode::CommitForwardingPipelineConfig() {
+::util::Status NikssNode::CommitForwardingPipelineConfig(std::map<uint64, std::map<uint32, 
+  NikssChassisManager::PortConfig>> chassis_config) {
+    
   RETURN_IF_ERROR(nikss_interface_->AddPipeline(node_id_, config_.p4_device_config()));
+  
+  for (auto it = chassis_config[node_id_].begin(); it != chassis_config[node_id_].end(); it++) {
+    uint32 key = it->first;
+    NikssChassisManager::PortConfig config = it->second;
+    LOG(INFO) << "Adding new port with name " << config.name << ".";
+    RETURN_IF_ERROR(nikss_interface_->AddPort(node_id_, config.name));
+  }
+  
   return ::util::OkStatus();
 }
 

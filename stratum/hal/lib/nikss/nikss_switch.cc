@@ -25,6 +25,8 @@ NikssSwitch::NikssSwitch(PhalInterface* phal_interface,
 NikssSwitch::~NikssSwitch() {}
 
 ::util::Status NikssSwitch::PushChassisConfig(const ChassisConfig& config) {
+  LOG(INFO) << "Pushing chassis config";
+  RETURN_IF_ERROR(nikss_chassis_manager_->PushChassisConfig(config));
   return ::util::OkStatus();
 }
 
@@ -38,7 +40,9 @@ NikssSwitch::~NikssSwitch() {}
   LOG(INFO) << "Pushing P4-based forwarding pipeline to NIKSS";
 
   ASSIGN_OR_RETURN(auto* node, GetNikssNodeFromNodeId(node_id));
-  RETURN_IF_ERROR(node->PushForwardingPipelineConfig(config));
+  ASSIGN_OR_RETURN(auto chassis_config, nikss_chassis_manager_->GetPortConfig());
+  
+  RETURN_IF_ERROR(node->PushForwardingPipelineConfig(config, chassis_config));
 
   LOG(INFO) << "P4-based forwarding pipeline config pushed successfully to "
             << "node with ID " << node_id << ".";
@@ -64,9 +68,13 @@ NikssSwitch::~NikssSwitch() {}
   return ::util::OkStatus();
 }
 
-::util::Status NikssSwitch::Freeze() { return ::util::OkStatus(); }
+::util::Status NikssSwitch::Freeze() { 
+  return ::util::OkStatus(); 
+}
 
-::util::Status NikssSwitch::Unfreeze() { return ::util::OkStatus(); }
+::util::Status NikssSwitch::Unfreeze() { 
+  return ::util::OkStatus(); 
+}
 
 ::util::Status NikssSwitch::WriteForwardingEntries(
     const ::p4::v1::WriteRequest& req, std::vector<::util::Status>* results) {

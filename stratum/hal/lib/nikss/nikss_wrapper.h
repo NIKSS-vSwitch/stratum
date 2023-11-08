@@ -16,6 +16,10 @@ namespace nikss {
 class NikssWrapper : public NikssInterface {
  public:
   // NikssInterface public methods.
+  ::util::Status AddPort(int pipeline_id,
+                         const std::string& port_name);
+  ::util::Status DelPort(int pipeline_id,
+                         const std::string& port_name);
   ::util::Status AddPipeline(int pipeline_id,
                              const std::string filepath) override;
 

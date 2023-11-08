@@ -14,6 +14,9 @@ class NikssInterface {
   virtual ::util::Status AddPipeline(int pipeline_id,
                                      const std::string filepath) = 0;
 
+  // Add a new port with the given parameters.
+  virtual ::util::Status AddPort(int pipeline_id, const std::string& port_name) = 0;
+
  protected:
   // Default constructor. To be called by the Mock class instance only.
   NikssInterface() {}
