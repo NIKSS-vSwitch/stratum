@@ -21,7 +21,7 @@ class NikssWrapper : public NikssInterface {
   ::util::Status DelPort(int pipeline_id,
                          const std::string& port_name);
   ::util::Status AddPipeline(int pipeline_id,
-                         const std::string filepath) override;
+                             const std::string filepath) override;
 
   static NikssWrapper* CreateSingleton() LOCKS_EXCLUDED(init_lock_);
 
