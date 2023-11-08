@@ -36,7 +36,7 @@ NikssSwitch::~NikssSwitch() {}
 
 ::util::Status NikssSwitch::PushForwardingPipelineConfig(
     uint64 node_id, const ::p4::v1::ForwardingPipelineConfig& config) {
-  
+
   LOG(INFO) << "Pushing P4-based forwarding pipeline to NIKSS";
 
   ASSIGN_OR_RETURN(auto* node, GetNikssNodeFromNodeId(node_id));
@@ -46,7 +46,7 @@ NikssSwitch::~NikssSwitch() {}
 
   LOG(INFO) << "P4-based forwarding pipeline config pushed successfully to "
             << "node with ID " << node_id << ".";
-  
+
   return ::util::OkStatus();
 }
 
