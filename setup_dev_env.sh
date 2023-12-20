@@ -136,4 +136,5 @@ if [ "$NP4_INTEL" == YES ]; then
     DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS -v /dev/intel-fpga-fme.0:/dev/intel-fpga-fme.0"
 fi
 DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS $@"
+
 docker run $DOCKER_RUN_OPTIONS $IMAGE_NAME bash
