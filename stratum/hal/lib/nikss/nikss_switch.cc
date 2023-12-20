@@ -25,6 +25,8 @@ NikssSwitch::NikssSwitch(PhalInterface* phal_interface,
 NikssSwitch::~NikssSwitch() {}
 
 ::util::Status NikssSwitch::PushChassisConfig(const ChassisConfig& config) {
+  LOG(INFO) << "Pushing chassis config";
+  RETURN_IF_ERROR(nikss_chassis_manager_->PushChassisConfig(config));
   return ::util::OkStatus();
 }
 
@@ -38,7 +40,9 @@ NikssSwitch::~NikssSwitch() {}
   LOG(INFO) << "Pushing P4-based forwarding pipeline to NIKSS";
 
   ASSIGN_OR_RETURN(auto* node, GetNikssNodeFromNodeId(node_id));
-  RETURN_IF_ERROR(node->PushForwardingPipelineConfig(config));
+  ASSIGN_OR_RETURN(auto chassis_config, nikss_chassis_manager_->GetPortConfig());
+
+  RETURN_IF_ERROR(node->PushForwardingPipelineConfig(config, chassis_config));
 
   LOG(INFO) << "P4-based forwarding pipeline config pushed successfully to "
             << "node with ID " << node_id << ".";
@@ -64,20 +68,38 @@ NikssSwitch::~NikssSwitch() {}
   return ::util::OkStatus();
 }
 
-::util::Status NikssSwitch::Freeze() { return ::util::OkStatus(); }
+::util::Status NikssSwitch::Freeze() { 
+  return ::util::OkStatus(); 
+}
 
-::util::Status NikssSwitch::Unfreeze() { return ::util::OkStatus(); }
+::util::Status NikssSwitch::Unfreeze() { 
+  return ::util::OkStatus(); 
+}
 
 ::util::Status NikssSwitch::WriteForwardingEntries(
     const ::p4::v1::WriteRequest& req, std::vector<::util::Status>* results) {
-  return ::util::OkStatus();
+  if (!req.updates_size()) return ::util::OkStatus();  // nothing to do.
+
+  RET_CHECK(req.device_id()) << "No device_id in WriteRequest.";
+  RET_CHECK(results != nullptr)
+      << "Need to provide non-null results pointer for non-empty updates.";
+
+  //absl::ReaderMutexLock l(&chassis_lock);
+  ASSIGN_OR_RETURN(auto* nikss_node, GetNikssNodeFromNodeId(req.device_id()));
+  return nikss_node->WriteForwardingEntries(req, results);
 }
 
 ::util::Status NikssSwitch::ReadForwardingEntries(
     const ::p4::v1::ReadRequest& req,
     WriterInterface<::p4::v1::ReadResponse>* writer,
     std::vector<::util::Status>* details) {
-  return ::util::OkStatus();
+
+  RET_CHECK(req.device_id()) << "No device_id in ReadRequest.";
+  RET_CHECK(writer) << "Channel writer must be non-null.";
+  RET_CHECK(details) << "Details pointer must be non-null.";
+
+  ASSIGN_OR_RETURN(auto* nikss_node, GetNikssNodeFromNodeId(req.device_id()));
+  return nikss_node->ReadForwardingEntries(req, writer, details);
 }
 
 ::util::Status NikssSwitch::RegisterStreamMessageResponseWriter(
@@ -138,6 +160,6 @@ std::unique_ptr<NikssSwitch> NikssSwitch::CreateInstance(
   return node;
 }
 
-}  // namespace bmv2
+}  // namespace stratum
 }  // namespace hal
 }  // namespace nikss
